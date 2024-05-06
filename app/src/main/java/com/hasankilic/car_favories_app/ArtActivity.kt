@@ -16,6 +16,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.hasankilic.car_favories_app.databinding.ActivityArtBinding
+import java.io.ByteArrayOutputStream
+import java.io.OutputStream
 import java.lang.Exception
 import java.util.jar.Manifest
 
@@ -36,12 +38,62 @@ class ArtActivity : AppCompatActivity() {
 
     }
 
-
-
-
     fun saveButtonClicked(view: View){
+        val artName=binding.artNameText.text.toString()
+        val artistName=binding.artistname.text.toString()
+        val year=binding.yeartext.text.toString()
 
 
+
+        if (selectedBitmap!=null){
+            val smallBitmap= makeSmallerBitmap(selectedBitmap!!,300)
+            val outputStream= ByteArrayOutputStream()//gorseli veriye cevirme
+            smallBitmap.compress(Bitmap.CompressFormat.PNG,50,outputStream)
+            val byteArray= outputStream.toByteArray()
+
+            try {
+                val database = openOrCreateDatabase("Arts", MODE_PRIVATE,null)
+                database.execSQL("CREATE TABLE IF NOT EXISTS arts (id INTEGER PRIMARY KEY,artname VARCHAR,artisname VARCHAR,year VARCHAR , image BLOB)")
+                val sqlString = "INSERT INTO arts(artname,artistname,year,image) VALUES(?,?,?,?)"
+                val statement=database.compileStatement(sqlString)
+                statement.bindString(1,artName)
+                statement.bindString(2,artistName)
+                statement.bindString(3,year)
+                statement.bindBlob(4,byteArray)
+                statement.execute()
+
+
+
+            }catch (e:Exception){
+                e.printStackTrace()
+            }
+
+            val intent=Intent(this@ArtActivity,MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)//bundan once acı olan ne kadar aktıvıte varsa hepsınnı kapatıp maınactıvıteye donuyon
+            startActivity(intent)
+
+
+        }
+
+    }
+    private fun makeSmallerBitmap(image: Bitmap,maximumSize:Int):Bitmap{ //cok sacma bi sey foto kucultmek ıcın bıtmap
+        var width = image.width
+        var height=image.height
+        val bitmapRatio : Double = width.toDouble()/height.toDouble()
+
+        if (bitmapRatio>1){
+            //landscape
+            width=maximumSize
+            val scaledHeight= width/bitmapRatio
+            height=scaledHeight.toInt()
+        }else{
+            //portrait
+            height=maximumSize
+            val scaledHeight= width*bitmapRatio
+            width=scaledHeight.toInt()
+        }
+
+        return Bitmap.createScaledBitmap(image,width,height,true)//kolay yolu
 
     }
 

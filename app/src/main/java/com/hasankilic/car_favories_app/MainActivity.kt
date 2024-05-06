@@ -6,14 +6,38 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import com.hasankilic.car_favories_app.databinding.ActivityMainBinding
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var artList:ArrayList<Art>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityMainBinding.inflate(layoutInflater)
         val view=binding.root
         setContentView(view)
+
+        artList =ArrayList<Art>()
+
+        try{
+            val database= this.openOrCreateDatabase("Arts", MODE_PRIVATE,null)
+            val cursor=database.rawQuery("SELECT * FROM arts",null)
+            val artNameIx=cursor.getColumnIndex("artname")
+            val idIx=cursor.getColumnIndex("id")
+            while (cursor.moveToNext()){
+                val name= cursor.getString(artNameIx)
+                val id = cursor.getInt(idIx)
+                val art =Art(name,id)
+                artList.add(art)
+
+            }
+            cursor.close()
+
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {//baglama işlemi yapılcak
