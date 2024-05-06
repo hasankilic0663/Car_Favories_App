@@ -68,6 +68,8 @@ class ArtActivity : AppCompatActivity() {
                 cursor.close()
 
 
+                //bu kısımda recycle view tıklanandanmı yoksa ardıtemdan tıklanana gore ayarıyoz .
+
             }
 
 
